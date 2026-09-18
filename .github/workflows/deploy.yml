@@ -1,0 +1,32 @@
+name: Deploy Workers
+
+on:
+  push:
+    branches:
+      - main  # 每次推送到 main 分支时自动触发
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Workers
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # 进入 workers 目录安装依赖
+      - name: Install dependencies
+        working-directory: ./workers
+        run: npm install
+
+      # 使用 wrangler-action 自动推送到 Cloudflare
+      - name: Publish to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          workingDirectory: 'workers' # 核心：指定在 workers 目录下执行
